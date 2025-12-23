@@ -36,15 +36,18 @@ class OfficeExpense extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
-    
+
     public function currencyInfo()
     {
         return $this->hasOne(Country::class, 'currency_type', 'currency');
     }
-    
+
     public function account()
     {
         return $this->belongsTo(BankCashAccount::class, 'account_id');
     }
-
+    public function assignedManager()
+    {
+        return $this->belongsTo(User::class, 'assigned_manager_id');
+    }
 }

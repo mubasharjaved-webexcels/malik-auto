@@ -44,20 +44,43 @@ Route::prefix('v1')->group(function () {
         });
 
         // Car Expenses Resource + Custom Routes
-        Route::apiResource('car-expenses', CarExpensesController::class);
-        Route::prefix('car-expenses')->group(function () {
-            Route::get('search', [CarExpensesController::class, 'search']);
-            Route::post('filter', [CarExpensesController::class, 'filter']);
+
+        Route::prefix('car-expenses')->name('api.car-expenses.')->group(function () {
+            Route::get('/', [CarExpensesController::class, 'index']);
+            Route::post('/', [CarExpensesController::class, 'store']);
+            Route::get('/metadata', [CarExpensesController::class, 'metadata']);
+            Route::post('/filter', [CarExpensesController::class, 'filter']);
+            Route::get('/search', [CarExpensesController::class, 'search']);
+            Route::get('/{id}', [CarExpensesController::class, 'show']);
+            Route::put('/{id}', [CarExpensesController::class, 'update']);
+            Route::delete('/{id}', [CarExpensesController::class, 'destroy']);
         });
 
-        // Office Expenses Resource + Custom Routes
-        Route::apiResource('office-expenses', OfficeExpensesController::class);
-        Route::prefix('office-expenses')->group(function () {
-            Route::get('search', [OfficeExpensesController::class, 'search']);
-            Route::post('filter', [OfficeExpensesController::class, 'filter']);
-            Route::post('export', [OfficeExpensesController::class, 'export']);
-            Route::get('yards', [OfficeExpensesController::class, 'getYards']);
+        // Office Expenses Routes
+        Route::prefix('office-expenses')->name('api.office-expenses.')->group(function () {
+            Route::get('/filter', [OfficeExpensesController::class, 'filter'])->name('filter');
+            Route::get('/search', [OfficeExpensesController::class, 'search'])->name('search');
+            Route::get('/yards/by-country', [OfficeExpensesController::class, 'getYards'])->name('getYards');
+            Route::get('/export', [OfficeExpensesController::class, 'export'])->name('export');
+            Route::get('/', [OfficeExpensesController::class, 'index'])->name('index');
+            Route::post('/', [OfficeExpensesController::class, 'store'])->name('store');
+
+            Route::get('/{id}', [OfficeExpensesController::class, 'show'])
+                ->whereNumber('id')
+                ->name('show');
+
+            Route::put('/{id}', [OfficeExpensesController::class, 'update'])
+                ->whereNumber('id')
+                ->name('update');
+
+            Route::delete('/{id}', [OfficeExpensesController::class, 'destroy'])
+                ->whereNumber('id')
+                ->name('destroy');
         });
+        Route::get('/managers/by-country/{countryId}', [OfficeExpensesController::class, 'getManagersByCountry'])->name('getManagersByCountry');
+
+        // Additional endpoints
+
 
         // Currency Rates Routes
         Route::get('currency-rates', [CurrencyRateController::class, 'index']);
