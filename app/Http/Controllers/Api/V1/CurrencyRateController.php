@@ -4,46 +4,56 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Traits\ApiResponse;
+use App\Models\Country;
+use Illuminate\Validation\ValidationException;
 
 class CurrencyRateController extends Controller
 {
+    use ApiResponse;
+
     /**
-     * Display a listing of the resource.
+     * GET /api/currency-rates
      */
     public function index()
     {
-        //
+        try {
+            $countries = Country::whereNotNull('currency_rate')
+                ->orderBy('name')
+                ->get(['id', 'name', 'currency_type', 'currency_rate']);
+
+            return $this->success($countries, 'Currency rates fetched successfully');
+        } catch (\Exception $e) {
+            return $this->error('Failed to fetch currency rates', 500);
+        }
     }
 
     /**
-     * Store a newly created resource in storage.
+     * PUT /api/currency-rates/{country}
      */
-    public function store(Request $request)
+    public function update(Request $request, Country $country)
     {
-        //
-    }
+        try {
+            $validated = $request->validate([
+                'currency_rate' => 'required|numeric|min:0',
+            ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+            $country->update([
+                'currency_rate' => $validated['currency_rate'],
+            ]);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+            return $this->success(
+                $country->only(['id', 'name', 'currency_type', 'currency_rate']),
+                'Currency information updated successfully'
+            );
+        } catch (ValidationException $e) {
+            return $this->error(
+                'Validation error',
+                422,
+                $e->errors()
+            );
+        } catch (\Exception $e) {
+            return $this->error('Something went wrong', code: 500);
+        }
     }
 }

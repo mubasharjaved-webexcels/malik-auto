@@ -41,18 +41,22 @@ class CarProfile extends Model
         'car_image',
         'car_video',
     ];
-
+    protected $appends = [
+        'car_image_url',
+        'car_video_url',
+        'car_gallery_urls',
+    ];
     public function country()
     {
         return $this->belongsTo(Country::class);
     }
-    
+
     public function countryCurrency()
     {
-    //     return $this->belongsTo(Country::class);
+        //     return $this->belongsTo(Country::class);
         return $this->hasOne(Country::class, 'currency_type', 'currency_type');
     }
-    
+
     public function expenses()
     {
         return $this->hasMany(CarExpense::class, 'car_profile_id');
@@ -62,10 +66,39 @@ class CarProfile extends Model
     {
         return $this->belongsTo(User::class, 'assigned_manager_id');
     }
-    
+
     public function galleryImages()
     {
         return $this->hasMany(GalleryImage::class);
     }
-    
+    /**
+     * Full URL for main car image
+     */
+
+    public function getCarImageUrlAttribute()
+    {
+        if (!$this->car_image) {
+            return null;
+        }
+
+        // Simply prepend /storage/ to the path
+        return url('storage/' . $this->car_image);
+    }
+
+    public function getCarVideoUrlAttribute()
+    {
+        if (!$this->car_video) {
+            return null;
+        }
+
+        return url('storage/' . $this->car_video);
+    }
+
+    public function getCarGalleryUrlsAttribute()
+    {
+        return $this->galleryImages->map(function ($image) {
+            // path already contains 'storage/', so just prepend base URL
+            return url('storage/' . $image->path);
+        })->toArray();
+    }
 }

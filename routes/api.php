@@ -39,9 +39,10 @@ Route::prefix('v1')->group(function () {
         Route::prefix('car-profiles')->group(function () {
             Route::get('search', [CarProfileController::class, 'search']);
             Route::post('check-chassis', [CarProfileController::class, 'checkChassis']);
-            Route::post('{id}/transfer', [CarProfileController::class, 'transfer']);
-            Route::patch('{id}/mark-received', [CarProfileController::class, 'markReceived']);
+            Route::post('{id}/transfer', [CarProfileController::class, 'transferToCountry']);
         });
+        Route::get('yards-by-country/{countryId}', [CarProfileController::class, 'getYardsByCountry']);
+        Route::patch('/mark-car-received/{car}', [CarProfileController::class, 'markReceived']);
 
         // Car Expenses Resource + Custom Routes
 
@@ -83,8 +84,10 @@ Route::prefix('v1')->group(function () {
 
 
         // Currency Rates Routes
-        Route::get('currency-rates', [CurrencyRateController::class, 'index']);
-        Route::put('currency-rates/{country}', [CurrencyRateController::class, 'update']);
+        Route::prefix('currency-rates')->group(function () {
+            Route::get('/', [CurrencyRateController::class, 'index']);
+            Route::put('/{country}', [CurrencyRateController::class, 'update']);
+        });
 
         // Helper/Utility Routes
         Route::get('countries', function () {
@@ -94,7 +97,6 @@ Route::prefix('v1')->group(function () {
             ]);
         });
 
-        Route::get('yards-by-country/{countryId}', [CarProfileController::class, 'getYardsByCountry']);
 
         Route::get('managers-by-country/{countryId}', function ($countryId) {
             return response()->json([
@@ -119,6 +121,11 @@ Route::prefix('v1')->group(function () {
             // Pending Sold Cars
             Route::get('pending-sold', [CarProfileController::class, 'getPendingRequests']);
             Route::put('pending-sold/{id}/process', [CarProfileController::class, 'processPendingRequest']);
+            Route::prefix('accounts')->group(function () {
+                Route::get('/edit/{account}', [BankCashAccountController::class, 'edit'])->name('accounts.edit');
+                Route::put('/update/{account}', [BankCashAccountController::class, 'update'])->name('accounts.update');
+                Route::put('/accounts/{account}/toggle-status', [BankCashAccountController::class, 'toggleStatus'])->name('accounts.toggleStatus');
+            });
         });
 
         // Admin & Manager Routes
